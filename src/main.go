@@ -2,9 +2,10 @@ package main
 
 import (
     "encoding/json"
+    "log"
     "net/http"
-    "backend/src/hederaService"
     "backend/src/config"
+    "backend/src/hederaService"
     "github.com/hashgraph/hedera-sdk-go/v2"
 )
 
@@ -37,11 +38,17 @@ func (api *API) sendMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
     cfg := config.LoadConfig()
-    hs := hederaService.NewHederaService(cfg)
+
+    // Corrected: Handle both return values (HederaService instance and error)
+    hs, err := hederaService.NewHederaService(cfg)
+    if err != nil {
+        log.Fatalf("Failed to create Hedera service: %v", err)
+    }
+
     api := NewAPI(hs)
 
     http.HandleFunc("/send-message", api.sendMessageHandler)
+    // Other handlers for creating topics, subscribing, adding friends, etc.
 
-    http.ListenAndServe(":8080", nil)
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
-
