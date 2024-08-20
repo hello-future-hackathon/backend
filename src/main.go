@@ -36,10 +36,20 @@ func (api *API) sendMessageHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(txResponse)
 }
 
+func (api *API) CreateTopic(w http.ResponseWriter, r *http.Request) {
+    topicID, err := api.hederaService.CreateTopic()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(topicID)
+}
+
 func main() {
     cfg := config.LoadConfig()
 
-    // Corrected: Handle both return values (HederaService instance and error)
     hs, err := hederaService.NewHederaService(cfg)
     if err != nil {
         log.Fatalf("Failed to create Hedera service: %v", err)
@@ -48,7 +58,7 @@ func main() {
     api := NewAPI(hs)
 
     http.HandleFunc("/send-message", api.sendMessageHandler)
-    // Other handlers for creating topics, subscribing, adding friends, etc.
+    http.HandleFunc("/create-topic", api.CreateTopic)
 
     log.Fatal(http.ListenAndServe(":8080", nil))
 }

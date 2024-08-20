@@ -28,7 +28,6 @@ func (hs *HederaService) CreateTopic() (hedera.TopicID, error) {
         return hedera.TopicID{}, err
     }
 
-    // Corrected: Pass the client instead of context.Background()
     receipt, err := txResponse.GetReceipt(hs.client)
     if err != nil {
         return hedera.TopicID{}, err
@@ -54,7 +53,6 @@ func (hs *HederaService) SendMessage(topicID hedera.TopicID, message string) (he
 }
 
 func (hs *HederaService) SubscribeToTopic(topicID hedera.TopicID, messageHandler func(hedera.TopicMessage)) error {
-    // Corrected: Removed context.Background() and passed only client and handler
     _, err := hedera.NewTopicMessageQuery().
         SetTopicID(topicID).
         Subscribe(hs.client, messageHandler)
