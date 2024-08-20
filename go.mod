@@ -2,6 +2,8 @@ module backend
 
 go 1.22.5
 
+require github.com/hashgraph/hedera-sdk-go/v2 v2.43.0
+
 require (
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
@@ -13,12 +15,11 @@ require (
 	github.com/ethereum/c-kzg-4844 v1.0.1 // indirect
 	github.com/ethereum/go-ethereum v1.13.15 // indirect
 	github.com/hashgraph/hedera-protobufs-go v0.2.1-0.20240704081952-395063202d11 // indirect
-	github.com/hashgraph/hedera-sdk-go/v2 v2.43.0 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
