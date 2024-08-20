@@ -2,7 +2,10 @@ module backend
 
 go 1.22.5
 
-require github.com/hashgraph/hedera-sdk-go/v2 v2.43.0
+require (
+	github.com/gorilla/websocket v1.5.3
+	github.com/hashgraph/hedera-sdk-go/v2 v2.43.0
+)
 
 require (
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect

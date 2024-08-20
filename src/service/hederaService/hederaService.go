@@ -3,21 +3,23 @@ package hederaService
 import (
     "log"
     "backend/src/config"
+    "backend/src/service/websocketService"
     "github.com/hashgraph/hedera-sdk-go/v2"
 )
 
 type HederaService struct {
     client *hedera.Client
+    wsService *websocketService.WebSocketService
 }
 
-func NewHederaService(cfg config.Config) (*HederaService, error) {
+func NewHederaService(cfg config.Config, wsService *websocketService.WebSocketService) (*HederaService, error) {
     client, err := hedera.ClientForName(cfg.Network)
     if err != nil {
         return nil, err
     }
     
     client.SetOperator(cfg.AccountID, cfg.PrivateKey)
-    return &HederaService{client: client}, nil
+    return &HederaService{client: client, wsService: wsService}, nil
 }
 
 func (hs *HederaService) CreateTopic() (hedera.TopicID, error) {
@@ -55,7 +57,10 @@ func (hs *HederaService) SendMessage(topicID hedera.TopicID, message string) (he
 func (hs *HederaService) SubscribeToTopic(topicID hedera.TopicID, messageHandler func(hedera.TopicMessage)) error {
     _, err := hedera.NewTopicMessageQuery().
         SetTopicID(topicID).
-        Subscribe(hs.client, messageHandler)
+        Subscribe(hs.client, func(tm hedera.TopicMessage) {
+            log.Printf("Received message: %s\n", string(tm.Contents))
+            hs.wsService.Broadcast <- tm.Contents
+        })
     if err != nil {
         return err
     }

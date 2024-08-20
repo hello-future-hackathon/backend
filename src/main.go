@@ -5,7 +5,8 @@ import (
     "log"
     "net/http"
     "backend/src/config"
-    "backend/src/hederaService"
+    "backend/src/service/hederaService"
+    "backend/src/service/websocketService"
     "github.com/hashgraph/hedera-sdk-go/v2"
 )
 
@@ -43,22 +44,47 @@ func (api *API) CreateTopic(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    go func() {
+        err := api.hederaService.SubscribeToTopic(topicID, func(tm hedera.TopicMessage) {
+            log.Printf("Received message: %s\n", string(tm.Contents))
+        })
+        if err != nil {
+            log.Printf("Failed to subscribe to topic %s: %v", topicID.String(), err)
+        }
+    }()
+
     w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(topicID)
 }
 
+
 func main() {
     cfg := config.LoadConfig()
 
-    hs, err := hederaService.NewHederaService(cfg)
+    wsService := websocketService.NewWebSocketService()
+    hs, err := hederaService.NewHederaService(cfg, wsService)
     if err != nil {
         log.Fatalf("Failed to create Hedera service: %v", err)
     }
 
     api := NewAPI(hs)
 
+    http.HandleFunc("/ws", wsService.HandleConnections)
+    go wsService.HandleMessages()
+
     http.HandleFunc("/send-message", api.sendMessageHandler)
     http.HandleFunc("/create-topic", api.CreateTopic)
+
+    existingTopicID := hedera.TopicID{Shard: 0, Realm: 0, Topic: 4703702}
+    go func() {
+        err := hs.SubscribeToTopic(existingTopicID, func(tm hedera.TopicMessage) {
+            log.Printf("Received message: %s\n", string(tm.Contents))
+            wsService.Broadcast <- tm.Contents
+        })
+        if err != nil {
+            log.Fatalf("Failed to subscribe to topic %s: %v", existingTopicID.String(), err)
+        }
+    }()
 
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
